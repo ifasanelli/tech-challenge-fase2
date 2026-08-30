@@ -4,7 +4,7 @@
 CREATE SCHEMA IF NOT EXISTS `tech-challenge-fase2-507116.gold`
 OPTIONS (
   description = "Camada Gold — Star Schema do Indicador Criança Alfabetizada",
-  location = "us-east1"
+  location = "southamerica-east1"
 );
 
 -- dim_tempo

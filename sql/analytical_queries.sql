@@ -69,7 +69,7 @@ FROM evolucao
 ORDER BY sigla_uf, ano;
 
 -- =====================================================================
--- Query 3: Top 20 Municípios Mais Próximos de Atingir a Meta (gap > -30)
+-- Query 3: Top 20 Municípios Mais Próximos de Atingir a Meta (gap BETWEEN 0 AND 50)
 -- =====================================================================
 SELECT
     f.id_municipio,
@@ -82,10 +82,8 @@ SELECT
     ROUND(f.indicador_alfabetizacao, 2) AS indicador_alfabetizacao
 FROM `tech-challenge-fase2-507116`.gold.fato_indicador_alfabetizacao f
 LEFT JOIN `tech-challenge-fase2-507116`.gold.dim_municipio m USING (id_municipio)
-WHERE f.ano = (SELECT MAX(ano) FROM `tech-challenge-fase2-507116`.gold.fato_indicador_alfabetizacao`)
-  AND f.atingiu_corte_alfabetizado = FALSE
-  AND f.gap_proficiencia > -30
-ORDER BY f.gap_proficiencia DESC
+WHERE f.gap_proficiencia BETWEEN 0 AND 50
+ORDER BY f.gap_proficiencia ASC
 LIMIT 20;
 
 -- =====================================================================
