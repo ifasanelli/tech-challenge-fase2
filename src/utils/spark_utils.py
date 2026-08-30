@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 from pyspark.sql import SparkSession
+from delta.pip_utils import configure_spark_with_delta_pip
 
 _JARS_DIR = Path(__file__).parent.parent.parent / "jars"
 _GCS_JAR = str(_JARS_DIR / "gcs-connector-hadoop3-latest.jar")
@@ -13,16 +14,17 @@ def get_spark_gcs(app_name: str) -> SparkSession:
 
     builder = SparkSession.builder.appName(app_name)
 
-    # Configure Delta Lake extensions only if the Delta storage JAR is available
-    if _DELTA_STORAGE_JAR in existing_jars:
-        builder = (
-            builder
-            .config("spark.sql.extensions", "io.delta.sql.DeltaSparkSessionExtension")
-            .config(
-                "spark.sql.catalog.spark_catalog",
-                "org.apache.spark.sql.delta.catalog.DeltaCatalog",
-            )
+    # Configure Delta Lake with automatic JAR download from Maven
+    builder = configure_spark_with_delta_pip(builder)
+
+    builder = (
+        builder
+        .config("spark.sql.extensions", "io.delta.sql.DeltaSparkSessionExtension")
+        .config(
+            "spark.sql.catalog.spark_catalog",
+            "org.apache.spark.sql.delta.catalog.DeltaCatalog",
         )
+    )
 
     if existing_jars:
         builder = builder.config("spark.jars", ",".join(existing_jars))
