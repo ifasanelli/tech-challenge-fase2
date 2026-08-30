@@ -31,8 +31,9 @@ def main():
     result = process_silver_to_gold()
     log.info("Gold: %s", result)
 
+    _bucket = os.environ.get("GCS_BUCKET", "tech-challenge-fase2-507116-datalake")
     log.info("=== Pipeline complete ===")
-    log.info("Logs disponíveis em: gs://tech-challenge-fase2-507116-datalake/logs/pipeline/")
+    log.info("Logs disponíveis em: gs://%s/logs/pipeline/", _bucket)
 
 
 if __name__ == "__main__":

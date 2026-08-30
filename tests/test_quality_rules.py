@@ -58,17 +58,19 @@ def test_ibge_code_consistency(spark):
 def test_deduplication_keeps_latest(spark):
     """Deduplicação por (id_municipio, ano) deve manter o registro mais recente."""
     from pyspark.sql.functions import col
-    from src.quality.quarantine_manager import QuarantineManager
+    from src.processing.bronze_to_silver import _deduplicate
 
     sample = [
-        ("3550308", "SP", 2023, 80.0, 750.0),
-        ("3550308", "SP", 2023, 82.4, 755.2),  # duplicata mais recente
+        ("3550308", "SP", 2023, 80.0, 750.0, "2026-08-30T10:00:00"),
+        ("3550308", "SP", 2023, 82.4, 755.2, "2026-08-30T12:00:00"),  # mais recente
     ]
     cols = ["id_municipio", "sigla_uf", "ano", "indicador_alfabetizacao",
-            "media_proficiencia_saeb"]
+            "media_proficiencia_saeb", "_ingestion_timestamp"]
     df = spark.createDataFrame(sample, cols)
-    df_clean, _ = QuarantineManager.split_clean_and_quarantine(df)
-    assert df_clean.count() == 2  # quarantine nao deduplica, só segrega
+    df_dedup = _deduplicate(df, ["id_municipio", "ano"], "_ingestion_timestamp")
+    assert df_dedup.count() == 1
+    row = df_dedup.collect()[0]
+    assert row["media_proficiencia_saeb"] == 755.2
 
 
 def test_gold_saeb_cutoff(spark):

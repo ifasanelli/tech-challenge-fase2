@@ -74,14 +74,16 @@ def _add_lineage(df: pd.DataFrame, source_name: str, batch_id: str) -> pd.DataFr
     return df
 
 
-def _write_to_gcs(df: pd.DataFrame, gcs_path: str) -> None:
+def _write_to_gcs(df: pd.DataFrame, gcs_path: str) -> bool:
     try:
         import gcsfs
         fs = gcsfs.GCSFileSystem()
         with fs.open(gcs_path, "wb") as fh:
             df.to_parquet(fh, index=False, compression="snappy")
+        return True
     except Exception as exc:
         print(f"[WARN] Falha ao escrever em GCS ({gcs_path}): {exc}")
+        return False
 
 
 @monitor_stage("batch_ingestion")
@@ -105,9 +107,11 @@ def ingest_batch_to_bronze() -> dict:
 
         df = _add_lineage(df, source["name"], batch_id)
         gcs_path = f"gs://{_GCS_BUCKET}/{source['bronze_prefix']}/data_{batch_id}.parquet"
-        _write_to_gcs(df, gcs_path)
-        print(f"[✔] {source['name']}: {len(df)} registros → {gcs_path}")
-        total_rows += len(df)
+        if _write_to_gcs(df, gcs_path):
+            print(f"[✔] {source['name']}: {len(df)} registros → {gcs_path}")
+            total_rows += len(df)
+        else:
+            print(f"[SKIP] {source['name']}: escrita falhou, registros não contabilizados.")
 
     rows_q = 0
     rate = 0.0

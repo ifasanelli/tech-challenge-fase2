@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-from pyspark.sql.functions import from_json, col, current_timestamp
+from pyspark.sql.functions import from_json, col, current_timestamp, lit
 from pyspark.sql.types import (
     StructType, StructField, StringType, IntegerType, DoubleType
 )
@@ -40,13 +40,14 @@ def run_streaming():
                  .select(from_json(col("json_payload"), EVENT_SCHEMA).alias("data"))
                  .select("data.*")
                  .withColumn("_ingestion_timestamp", current_timestamp())
-                 .withColumn("_source_topic", col("sigla_uf").cast("string")))  # linhagem
+                 .withColumn("_source_topic", lit(_TOPIC)))
 
     bronze_path = f"gs://{_BUCKET}/bronze/medicoes_stream"
     checkpoint_path = f"gs://{_BUCKET}/checkpoints/bronze_medicoes_stream"
 
+    # Bronze layer uses Parquet (spec: "Bronze: Parquet + Snappy, sem Delta")
     query = (df_parsed.writeStream
-             .format("delta")
+             .format("parquet")
              .outputMode("append")
              .option("checkpointLocation", checkpoint_path)
              .start(bronze_path))
