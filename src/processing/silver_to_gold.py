@@ -58,18 +58,18 @@ def _build_dim_tempo(df_silver):
 
 
 def _build_dim_municipio(df_silver):
-    """Build dim_municipio from Silver; includes nome_municipio if present."""
+    """Build dim_municipio from Silver; optional columns included when present."""
     mun_cols = ["id_municipio", "sigla_uf"]
-    for c in ["nome_municipio"]:
+    for c in ["nome_municipio", "regiao"]:
         if c in df_silver.columns:
             mun_cols.append(c)
     return df_silver.select(mun_cols).dropDuplicates(["id_municipio"])
 
 
 def _build_dim_uf(df_silver):
-    """Build dim_uf from Silver; includes nome_uf and regiao if present."""
+    """Build dim_uf from Silver; optional columns included when present."""
     uf_cols = ["sigla_uf"]
-    for c in ["nome_uf", "regiao"]:
+    for c in ["nome_uf", "regiao", "populacao"]:
         if c in df_silver.columns:
             uf_cols.append(c)
     return df_silver.select(uf_cols).dropDuplicates(["sigla_uf"])
