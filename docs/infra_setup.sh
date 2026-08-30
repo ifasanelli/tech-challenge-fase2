@@ -3,7 +3,7 @@
 # Pré-requisitos: gcloud CLI autenticado, gsutil disponível, bq disponível
 # Uso: bash docs/infra_setup.sh
 
-set -e
+set -euo pipefail
 
 PROJECT_ID="tech-challenge-fase2-507116"
 BUCKET="tech-challenge-fase2-507116-datalake"
