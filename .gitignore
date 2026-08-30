@@ -1,0 +1,45 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual environment
+.venv/
+venv/
+env/
+
+# Environment / credentials
+.env
+credentials/
+*.json
+!jars/.gitkeep
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Spark / Delta Lake
+derby.log
+metastore_db/
+spark-warehouse/
+
+# Data (mock CSVs ficam, dados reais não)
+data/raw/
+data/processed/
+
+# Logs locais
+*.log
+logs/
