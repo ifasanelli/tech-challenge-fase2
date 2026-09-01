@@ -207,31 +207,55 @@ A base tratada na camada **Gold** fornece os dados prontos para alimentar modelo
 ## 📁 11. Estrutura do Repositório
 
 ```bash
-├── README.md                      # Documentação técnica completa
-├── docker-compose.yml             # Subida do ecossistema local (Kafka, Zookeeper, Spark)
-├── requirements.txt               # Dependências Python
+├── README.md                        # Documentação técnica completa
+├── docker-compose.yml               # Subida do ecossistema local (Kafka, Zookeeper, Spark)
+├── requirements.txt                 # Dependências Python
+├── pytest.ini                       # Configuração do pytest
+├── run_pipeline.py                  # Orquestrador sequencial da pipeline completa (GCP)
+├── run_local_demo.py                # Demo local sem GCP/Java: Bronze → Silver → Gold com pandas
 ├── src/
 │   ├── ingestion/
-│   │   ├── batch_ingestion.py     # Script de coleta dos datasets da Base dos Dados -> Bronze
-│   │   └── kafka_producer.py      # Produtor simulador de eventos de medição Saeb
+│   │   ├── batch_ingestion.py       # Coleta dos datasets da Base dos Dados -> Bronze
+│   │   └── kafka_producer.py        # Produtor simulador de eventos de medição Saeb
 │   ├── processing/
-│   │   ├── bronze_to_silver.py    # Pipeline PySpark: limpeza, normalização e quarentena
-│   │   └── silver_to_gold.py      # Pipeline PySpark: modelagem dimensional (Fato e Dimensões)
+│   │   ├── bronze_to_silver.py      # Pipeline PySpark: limpeza, normalização e quarentena
+│   │   └── silver_to_gold.py        # Pipeline PySpark: modelagem dimensional (Fato e Dimensões)
 │   ├── streaming/
-│   │   └── kafka_consumer.py      # Spark Structured Streaming consumindo Kafka -> Silver
+│   │   └── kafka_consumer.py        # Spark Structured Streaming consumindo Kafka -> Silver
 │   ├── quality/
-│   │   ├── data_contracts.py      # Regras de validação e contrato de schema
-│   │   └── quarantine_manager.py  # Funções de segregação de dados inconsistentes
+│   │   ├── data_contracts.py        # Regras de validação e contrato de schema
+│   │   └── quarantine_manager.py    # Segregação de registros inconsistentes para quarentena
+│   ├── monitoring/
+│   │   └── pipeline_monitor.py      # Monitoramento e métricas de execução da pipeline
+│   ├── utils/
+│   │   └── spark_utils.py           # Utilitários compartilhados para sessões Spark/Delta
 │   └── nosql/
 │       ├── nosql_document_loader.py # Carregamento de dados desnormalizados no MongoDB
-│       └── vector_indexing.py       # Pipeline de geração de embeddings e carga vetorial
+│       └── vector_indexing.py       # Geração de embeddings e indexação vetorial
 ├── sql/
-│   ├── ddl_gold_schema.sql        # Criação das tabelas Star Schema
-│   └── analytical_queries.sql     # Queries analíticas avançadas com CTEs e Agregações
+│   ├── ddl_gold_schema.sql          # Criação das tabelas Star Schema
+│   └── analytical_queries.sql       # Queries analíticas com CTEs e funções de janela
+├── data/
+│   └── mock/                        # Dados de amostra locais para testes sem billing GCP
+│       ├── br_inep_alfabetizacao_brasil.csv
+│       ├── br_inep_alfabetizacao_municipio.csv
+│       ├── br_inep_alfabetizacao_uf.csv
+│       ├── br_inep_censo_escolar_aluno.csv
+│       ├── ibge_municipios.csv
+│       └── ibge_ufs.csv
 ├── tests/
-│   └── test_quality_rules.py      # Testes unitários das validações de dados
+│   ├── conftest.py                  # Fixtures compartilhadas do pytest
+│   ├── test_batch_ingestion.py      # Testes da ingestão batch
+│   ├── test_kafka_consumer.py       # Testes do consumidor Kafka/Streaming
+│   ├── test_monitoring.py           # Testes do módulo de monitoramento
+│   ├── test_quality_rules.py        # Testes das regras de qualidade de dados
+│   ├── test_silver_to_gold.py       # Testes da transformação Silver → Gold
+│   └── test_spark_utils.py          # Testes dos utilitários Spark
 └── docs/
-    └── architecture_diagram.png   # Diagrama visual da arquitetura
+    ├── infra_setup.sh               # Script de provisionamento da infraestrutura GCP
+    ├── architecture_diagram.png     # Diagrama visual da arquitetura
+    ├── architecture_diagram.py      # Script gerador do diagrama arquitetural
+    └── resultado_query1_simulado.md # Resultado simulado da query analítica principal
 ```
 
 ---
@@ -272,8 +296,8 @@ python run_pipeline.py
 
 1. Configure suas credenciais GCP:
    ```bash
-   cp .env.example .env
-   # Edite .env com GOOGLE_APPLICATION_CREDENTIALS apontando para seu service-account.json
+   # Aponte a variável de ambiente para o arquivo de service account:
+   export GOOGLE_APPLICATION_CREDENTIALS="credentials/service-account.json"
    ```
 
 2. Execute o script de infraestrutura (cria bucket, lifecycle rules, JARs, BigQuery):
