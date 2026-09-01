@@ -1,0 +1,6 @@
+id_municipio,sigla_uf,ano,id_escola,localizacao,dependencia_administrativa
+3550308,SP,2023,ESC001,Urbana,Municipal
+3304557,RJ,2023,ESC002,Urbana,Estadual
+2304400,CE,2023,ESC003,Urbana,Municipal
+2312908,CE,2023,ESC004,Rural,Municipal
+1302603,AM,2023,ESC005,Rural,Municipal
